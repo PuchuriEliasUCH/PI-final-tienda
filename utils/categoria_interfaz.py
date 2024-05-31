@@ -1,8 +1,8 @@
 import os
 import tkinter as tk
 from tkinter import messagebox
-from utils.cnx import Connection
-from utils.querys import Consultas_sql as query
+from cnx import Connection
+from querys import Consultas_sql as query
 from dotenv import load_dotenv
 
 # Cargar las variables de entorno desde el archivo .env
@@ -13,14 +13,9 @@ config = {
     'user': os.getenv("BD_USER"),
     'password': os.getenv("BD_PASS"),
     'host': os.getenv("BD_HOST"),
-    'database': os.getenv("BD_NAME"),
-    'auth_plugin': 'mysql_native_password',  # Necesario en ciertos casos
-    'port': 3306,  # Puerto predeterminado de MySQL
-    'use_pure': True,  # Usar el conector MySQL puro
+    'database': os.getenv("BD_NAME")
 }
 
-# Asegurarse de que el socket UNIX no se utilice
-config['unix_socket'] = None
 
 class AgregarCategoriaApp:
     def __init__(self, root):
