@@ -1,6 +1,9 @@
 import mysql.connector
 
 class Connection:
+    import mysql.connector
+
+class Connection:
     def __init__(self, config):
         self.cnx = None
         self.cnx = mysql.connector.connect(**config)
