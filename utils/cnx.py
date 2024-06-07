@@ -1,7 +1,6 @@
 import mysql.connector
 
-class Connection:
-    import mysql.connector
+from .mensaje import Mensaje
 
 class Connection:
     def __init__(self, config):
@@ -17,7 +16,7 @@ class Connection:
         cursor = self.ejecutar_consulta(query, args)
         self.cnx.commit()
         cursor.close()
-        return "Nuevo registro añadido correctamente"
+        return Mensaje.NUEVO_REGISTRO
 
     def select_by_id(self, query, args = ()):
         res = None

@@ -12,7 +12,6 @@ class AgregarProducto(Toplevel):
         self.geometry("400x300")
 
         self.variable_ctg = StringVar()
-        # creando controles estándar (aca casi me mato, pq me confundi)
         Label(self, text="Categoria").grid(row=0, column=0, padx=10, pady=10)
 
         comboctg = ttk.Combobox(self, values=['Categoria 1', 'Categoria 2', 'Categoria 3'], state="readonly")
@@ -37,10 +36,6 @@ class AgregarProducto(Toplevel):
         entry_stock.grid(row=3, column=1, padx=10, pady=5)
 
         Button(self, text="Registrar", command=lambda: messagebox.showinfo("Registrar", "Producto registrado")).grid(row=4, column=1, padx=10, pady=20)
-
-
-        # -- :3 
-        Label(self, text="TODAS LAS CATEGORIAS").grid(row=5, column=0, columnspan=3, pady=20)
 
     def nueva_categoria(self):
         AgregarCategoriaApp(self, self.cnx)

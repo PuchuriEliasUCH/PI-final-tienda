@@ -4,6 +4,8 @@ import os
 from tkinter import *
 from tkinter import ttk
 
+from utils.querys import Consultas_sql as query
+
 from utils.cnx import Connection
 from utils.querys import Consultas_sql as query
 from views.venta_interfaz import Venta_app
@@ -18,6 +20,8 @@ config = {
 }
 
 cnx = Connection(config)
+
+print(cnx.select_all(query.SP_LISTADO))
 
 app = Venta_app(cnx)
 app.mainloop()

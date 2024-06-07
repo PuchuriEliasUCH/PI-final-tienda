@@ -10,3 +10,5 @@ class Consultas_sql:
     U_CATE = "UPDATE categoria SET nombre = %s WHERE id_cat = %s"
 
     D_CATE = "DELETE FROM categoria WHERE id_cat = %s"
+
+    SP_LISTADO = "CALL sp_listado()"
