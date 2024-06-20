@@ -31,9 +31,9 @@ class AgregarCategoriaApp(Toplevel):
         self.lbl_mensaje.grid(row=1, column=0, columnspan=3, padx=10, pady=10)
 
         # Tabla de categorías
-        self.tree = ttk.Treeview(self, columns=("Nombre"), show="headings")
-        self.tree.heading("Nombre", text="Nombre")
+        self.tree = ttk.Treeview(self)
         self.tree.grid(row=2, column=0, columnspan=3, padx=10, pady=10, sticky="nsew")
+        self.tree.heading("#0", text="Nombre", anchor=CENTER)
 
         # Botones de eliminar y editar
         self.btn_eliminar = Button(self, text="Eliminar", command=self.eliminar_categoria, bg="red", fg="white")
@@ -45,9 +45,11 @@ class AgregarCategoriaApp(Toplevel):
     def load_categories(self):
         for row in self.tree.get_children():
             self.tree.delete(row)
+            
         categorias = self.cnx.select_all(query.SA_CATE)
+        
         for categoria in categorias:
-            self.tree.insert("", "end", values=(categoria[1],))
+            self.tree.insert("", 0, text = categoria[1], values = categoria[0])
 
     def agregar_categoria(self):
         nombre = self.entry_nombre.get()
@@ -62,29 +64,35 @@ class AgregarCategoriaApp(Toplevel):
     def eliminar_categoria(self):
         selected_item = self.tree.selection()
         if selected_item:
-            categoria_nombre = self.tree.item(selected_item[0], 'values')[0]
-            categoria_id = self.cnx.select_one(query.S_CATE_ID_BY_NAME, (categoria_nombre,))[0]
-            self.cnx.delete(query.D_CATE, (categoria_id,))
-            self.lbl_mensaje.config(text="Categoría eliminada correctamente", fg="green")
-            self.load_categories()
+            id_cate = self.tree.item(self.tree.selection())['values'][0]
+            
+            seguro = messagebox.askyesno('Eliminar', "Estás seguro de eliminar el registro?")
+            if seguro:
+                res = self.cnx.delete(query.D_CATE, (id_cate,))
+                messagebox.showinfo('Eliminar', res)
+                
         else:
-            self.lbl_mensaje.config(text="Seleccione una categoría para eliminar", fg="red")
+            self.lbl_mensaje.config(text="Seleccione una categoría para editar", fg="red")
+            
+        self.load_categories()
 
     def editar_categoria(self):
         selected_item = self.tree.selection()
         if selected_item:
-            categoria_nombre = self.tree.item(selected_item[0], 'values')[0]
-            EditarCategoriaApp(self, categoria_nombre, self.load_categories)
-            self.load_categories()
+            id_cate = self.tree.item(self.tree.selection())['values'][0]
+            nombre_cate = self.tree.item(self.tree.selection())['text']
+            EditarCategoriaApp(self, id_cate, nombre_cate, self.load_categories)
+            
         else:
             self.lbl_mensaje.config(text="Seleccione una categoría para editar", fg="red")
 
 class EditarCategoriaApp(Toplevel):
-    def __init__(self, master, categoria_nombre, refresh_callback):
+    def __init__(self, master, id_cate, nombre_cate, refresh):
         super().__init__(master)
         self.cnx = Connection()
-        self.categoria_nombre = categoria_nombre
-        self.refresh_callback = refresh_callback
+        self.id_cate = int(id_cate)
+        self.nombre_cate = nombre_cate
+        self.refresh = refresh
         self.title("Editar Categoría")
         self.geometry("300x200")
 
@@ -97,7 +105,7 @@ class EditarCategoriaApp(Toplevel):
 
         self.entry_nombre = Entry(self)
         self.entry_nombre.grid(row=0, column=1, padx=10, pady=10)
-        self.entry_nombre.insert(0, self.categoria_nombre)
+        self.entry_nombre.insert(0, self.nombre_cate)
 
         # Botón de actualizar categoría
         self.btn_actualizar = Button(self, text="Actualizar", command=self.actualizar_categoria)
@@ -106,9 +114,9 @@ class EditarCategoriaApp(Toplevel):
     def actualizar_categoria(self):
         nuevo_nombre = self.entry_nombre.get()
         if nuevo_nombre:
-            categoria_id = self.cnx.select_by_id(query.SO_CATE, (self.categoria_nombre[0],))
-            res = self.cnx.update(query.U_CATE, (nuevo_nombre, categoria_id))
+            res = self.cnx.update(query.U_CATE, (nuevo_nombre, self.id_cate))
             messagebox.showinfo("Éxito", res)
+            self.refresh()
             self.destroy()
         else:
             messagebox.showerror("Error", "Por favor, ingrese el nuevo nombre de la categoría")
