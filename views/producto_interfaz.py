@@ -2,12 +2,13 @@ from tkinter import *
 from tkinter import ttk, messagebox
 
 from .categoria_interfaz import AgregarCategoriaApp
+from utils.cnx import Connection
 
 
 class AgregarProducto(Toplevel):
-    def __init__(self, master, cnx):
+    def __init__(self, master):
         super().__init__(master)
-        self.cnx = cnx
+        self.cnx = Connection()
         self.title("Agregar producto")
         self.geometry("400x300")
 
@@ -38,6 +39,6 @@ class AgregarProducto(Toplevel):
         Button(self, text="Registrar", command=lambda: messagebox.showinfo("Registrar", "Producto registrado")).grid(row=4, column=1, padx=10, pady=20)
 
     def nueva_categoria(self):
-        AgregarCategoriaApp(self, self.cnx)
+        AgregarCategoriaApp(self)
                 
             

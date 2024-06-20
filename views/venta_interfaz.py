@@ -3,11 +3,12 @@ from tkinter import ttk
 
 from .producto_interfaz import AgregarProducto
 from utils.querys import Consultas_sql as query
+from utils.cnx import Connection
 
 class Venta_app(Tk):
-    def __init__(self, cnx):
+    def __init__(self):
         super().__init__()
-        self.cnx = cnx
+        self.cnx = Connection()
         self.geometry("500x300")
 
         self.title("Punto de venta")
@@ -18,5 +19,5 @@ class Venta_app(Tk):
         return self.cnx.select_all(query.SA_CATE)
     
     def nueva_categoria(self):
-        AgregarProducto(self, self.cnx)
+        AgregarProducto(self)
         
