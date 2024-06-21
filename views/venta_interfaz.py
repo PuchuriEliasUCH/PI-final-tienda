@@ -93,12 +93,11 @@ class Venta_app(tk.Tk):
         # Botón para calcular el total
         ttk.Button(frame_botones, text="Calcular Total", command=self.calcular_total).pack(side="left", padx=10, pady=5)
         # Botón para generar venta
-        ttk.Button(frame_botones, text="Generar venta", command="").pack(side="left", padx=10, pady=5)
+        ttk.Button(frame_botones, text="Generar venta", command=self.nueva_venta).pack(side="left", padx=10, pady=5)
 
         # Botón para salir
         ttk.Button(frame_botones, text="Salir", command=self.destroy).pack(side="right", padx=10, pady=5)
         
-        ttk.Button(frame_botones, text="Generar Venta", command=self.nueva_venta).pack(side="right", padx=10, pady=5)
         
         # Frame para la lista de productos
         self.frame_productos = ttk.Frame(self)
@@ -143,6 +142,9 @@ class Venta_app(tk.Tk):
 
 
     def cargar_inicial(self):
+        for item in self.tree_prod.get_children():
+            self.tree_prod.delete(item)
+            
         prods = self.cnx.select_all(query.SA_PROD)        
         self.num_factura.set(int(self.cnx.select_all(query.SCOUNT_VENTA)[0][0]) + 1)
         
