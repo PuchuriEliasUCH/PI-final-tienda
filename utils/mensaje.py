@@ -1,2 +1,2 @@
 class Mensaje:
-    NUEVO_REGISTRO = "Registro añadido correctamente"
+    NUEVO_REGISTRO = "Jano CTMREEEEEE"

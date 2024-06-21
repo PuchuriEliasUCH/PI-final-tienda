@@ -10,7 +10,7 @@ class Venta_app(tk.Tk):
     def __init__(self):
         super().__init__()
         self.cnx = Connection()
-        self.geometry("1000x600")
+        self.geometry("1000x500")
         self.title("Punto de venta")
         self.widgets()
         self.cargar_inicial()
@@ -52,9 +52,10 @@ class Venta_app(tk.Tk):
         ttk.Button(frame_info, text = 'Agregar', command=self.agregar_carrito).grid(column=1, row=2, pady=5, sticky='w')
         ttk.Button(frame_info, text = 'Cancelar', command = self.borrar_controles).grid(column=2, row=2, pady=5, sticky='w')
 
+
         # Treeview para mostrar los productos
         tree_frame = ttk.Frame(frame_principal)
-        tree_frame.pack(padx=10, pady=10)
+        tree_frame.pack(padx=10, pady=10, fill='both', expand=True)
 
         scrol_y = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL)
         scrol_y.pack(side=tk.RIGHT, fill=tk.Y)
@@ -78,22 +79,21 @@ class Venta_app(tk.Tk):
         self.tree.heading('#3', text="Cantidad")
         self.tree.heading('#4', text="Subtotal")
 
-        self.tree.column('Producto', anchor=tk.CENTER, width=100)
+        self.tree.column('Producto', anchor=tk.CENTER, width=200)
         self.tree.column('Precio', anchor=tk.CENTER, width=100)
         self.tree.column('Cantidad', anchor=tk.CENTER, width=100)
         self.tree.column('Subtotal', anchor=tk.CENTER, width=100)
 
-        self.tree.pack()
+        self.tree.pack(fill="both", expand=True)
 
         # Frame para los botones en la parte inferior
         frame_botones = ttk.Frame(frame_principal)
         frame_botones.pack(side="bottom", fill="x", pady=5)
 
-        # Botón para agregar nuevo producto
-        ttk.Button(frame_botones, text="Nuevo Producto", command=self.nueva_categoria).pack(side="left", padx=10, pady=5)
-
         # Botón para calcular el total
         ttk.Button(frame_botones, text="Calcular Total", command=self.calcular_total).pack(side="left", padx=10, pady=5)
+        # Botón para generar venta
+        ttk.Button(frame_botones, text="Generar venta", command="").pack(side="left", padx=10, pady=5)
 
         # Botón para salir
         ttk.Button(frame_botones, text="Salir", command=self.destroy).pack(side="right", padx=10, pady=5)
@@ -101,29 +101,38 @@ class Venta_app(tk.Tk):
         ttk.Button(frame_botones, text="Generar Venta", command=self.nueva_venta).pack(side="right", padx=10, pady=5)
         
         # Frame para la lista de productos
-        frame_productos = ttk.Frame(self)
-        frame_productos.grid(column=2, row=1, columnspan=1)
-        
-        tree_prod_frame = ttk.Frame(frame_productos)
-        tree_prod_frame.pack(padx=10, pady=10)
-        
+        self.frame_productos = ttk.Frame(self)
+        self.frame_productos.grid(column=1, row=1, sticky="nsew", padx=10, pady=10)
+
+        frame_pro_info = ttk.LabelFrame(self.frame_productos, text="Productos")
+        frame_pro_info.pack(fill="both", expand=True, padx=10, pady=10)
+
+        tree_prod_frame = ttk.Frame(frame_pro_info)
+        tree_prod_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
         self.tree_prod = ttk.Treeview(
             tree_prod_frame,
             columns=('precio', 'stock'),
-            height=10
+            height=10,
+            yscrollcommand=scrol_y.set,
+            xscrollcommand=scrol_x.set
         )
-        
-        self.tree_prod.heading("#0", text = "Nombre")
-        self.tree_prod.heading("precio", text = 'Precio')
-        self.tree_prod.heading("stock", text = 'Stock')
-        
-        self.tree_prod.pack()
-        
-        frame_acciones = ttk.Frame(frame_productos)
-        frame_acciones.pack(side = 'bottom', fill='x', pady = 5)
-        
-        ttk.Button(frame_acciones, text = 'Seleccionar', command = self.seleccionar_producto).pack(side= 'left', padx=10, pady=5)
-        ttk.Button(frame_acciones, text = 'Opciones', ).pack(side = 'left', padx=10, pady=5)
+
+        self.tree_prod.heading("#0", text="Nombre")
+        self.tree_prod.heading("precio", text='Precio')
+        self.tree_prod.heading("stock", text='Stock')
+
+        self.tree_prod.column("#0", anchor=tk.CENTER, width=200)
+        self.tree_prod.column("precio", anchor=tk.CENTER, width=100)
+        self.tree_prod.column("stock", anchor=tk.CENTER, width=100)
+
+        self.tree_prod.pack(fill="both", expand=True)
+
+        frame_acciones = ttk.Frame(frame_pro_info)
+        frame_acciones.pack(fill="x", padx=10, pady=5)
+
+        ttk.Button(frame_acciones, text='Seleccionar', command=self.seleccionar_producto).pack(side='left', padx=10, pady=5)
+        ttk.Button(frame_acciones, text="Nuevo Producto", command=self.nueva_categoria).pack(side="left", padx=10, pady=5)
 
     def calcular_total(self):
         total = 0.0
@@ -132,13 +141,9 @@ class Venta_app(tk.Tk):
             total += subtotal
         mb.showinfo("Total de la Venta", f"El total de la venta es: S/{total:.2f}")
 
+
     def cargar_inicial(self):
-        
-        for item in self.tree_prod.get_children():
-            self.tree_prod.delete(item)
-            
-        prods = self.cnx.select_all(query.SA_PROD)
-        
+        prods = self.cnx.select_all(query.SA_PROD)        
         self.num_factura.set(int(self.cnx.select_all(query.SCOUNT_VENTA)[0][0]) + 1)
         
         for prod in prods:
@@ -224,3 +229,4 @@ class Venta_app(tk.Tk):
         
 
 # No es necesario agregar el código de ejecución aquí ya que se encuentra en index.py
+
