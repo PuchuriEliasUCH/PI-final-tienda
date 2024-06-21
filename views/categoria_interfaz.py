@@ -5,8 +5,9 @@ from utils.querys import Consultas_sql as query
 from utils.cnx import Connection
 
 class AgregarCategoriaApp(Toplevel):
-    def __init__(self, master):
+    def __init__(self, master, refresh):
         super().__init__(master)
+        self.refresh = refresh
         self.cnx = Connection()
         self.title("Gestión de Categorías")
         self.geometry("500x400")
@@ -69,6 +70,7 @@ class AgregarCategoriaApp(Toplevel):
             seguro = messagebox.askyesno('Eliminar', "Estás seguro de eliminar el registro?")
             if seguro:
                 res = self.cnx.delete(query.D_CATE, (id_cate,))
+                self.refresh()
                 messagebox.showinfo('Eliminar', res)
                 
         else:
@@ -81,16 +83,17 @@ class AgregarCategoriaApp(Toplevel):
         if selected_item:
             id_cate = self.tree.item(self.tree.selection())['values'][0]
             nombre_cate = self.tree.item(self.tree.selection())['text']
-            EditarCategoriaApp(self, id_cate, nombre_cate, self.load_categories)
+            EditarCategoriaApp(self, id_cate, nombre_cate, self.load_categories, self.refresh)
             
         else:
             self.lbl_mensaje.config(text="Seleccione una categoría para editar", fg="red")
 
 class EditarCategoriaApp(Toplevel):
-    def __init__(self, master, id_cate, nombre_cate, refresh):
+    def __init__(self, master, id_cate, nombre_cate, refresh, cates):
         super().__init__(master)
         self.cnx = Connection()
         self.id_cate = int(id_cate)
+        self.cates = cates
         self.nombre_cate = nombre_cate
         self.refresh = refresh
         self.title("Editar Categoría")
@@ -117,6 +120,7 @@ class EditarCategoriaApp(Toplevel):
             res = self.cnx.update(query.U_CATE, (nuevo_nombre, self.id_cate))
             messagebox.showinfo("Éxito", res)
             self.refresh()
+            self.cates()
             self.destroy()
         else:
             messagebox.showerror("Error", "Por favor, ingrese el nuevo nombre de la categoría")

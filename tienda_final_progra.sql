@@ -29,13 +29,14 @@ fec_venta DATETIME DEFAULT NOW(),
 codigo_desc VARCHAR(20),
 descuento decimal(8,2) default 0,
 total decimal(8,2),
-FOREIGN KEY (codigo_desc) REFERENCES promociones(codigo_desc) 
+FOREIGN KEY (codigo_desc) REFERENCES promociones(codigo_desc)
 );
 
 CREATE TABLE detalle_venta(
 num_venta INT NOT NULL,
 id_prod INT NOT NULL,
 cantidad INT NOT NULL,
+subtotal decimal(7,2),
 FOREIGN KEY (num_venta) REFERENCES venta(num_venta),
 FOREIGN KEY (id_prod) REFERENCES producto(id_prod)
 );
@@ -46,4 +47,3 @@ select * from categoria;
 
 -- drop table producto;
 -- drop table categoria;
-

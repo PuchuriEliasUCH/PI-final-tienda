@@ -7,9 +7,10 @@ from utils.querys import Consultas_sql as querys
 
 
 class AgregarProducto(Toplevel):
-    def __init__(self, master):
+    def __init__(self, master, refresh):
         super().__init__(master)
         self.cnx = Connection()
+        self.refresh = refresh
         self.title("Agregar producto")
         self.geometry("400x300")
         
@@ -43,7 +44,7 @@ class AgregarProducto(Toplevel):
 
 
     def nueva_categoria(self):
-        AgregarCategoriaApp(self)
+        AgregarCategoriaApp(self, self.cargar_categorias)
         
     def cargar_categorias(self):
         return self.cnx.select_all(querys.SA_CATE)
@@ -57,6 +58,5 @@ class AgregarProducto(Toplevel):
             self.txt_stock.get()
         )
         self.cnx.insert(querys.I_PROD, params)
-        
-                
+        self.refresh() 
             

@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox as mb
 from .producto_interfaz import AgregarProducto
 from utils.querys import Consultas_sql as query
 from utils.cnx import Connection
+from models.venta import Det_venta
 
 
 class Venta_app(tk.Tk):
@@ -12,7 +13,7 @@ class Venta_app(tk.Tk):
         self.geometry("1000x600")
         self.title("Punto de venta")
         self.widgets()
-        self.cargar_productos()
+        self.cargar_inicial()
 
     def widgets(self):
         # Frame principal
@@ -48,8 +49,8 @@ class Venta_app(tk.Tk):
         self.txt_cantidad = ttk.Entry(frame_info, textvariable=self.cantidad_pro, font='sans 8')
         self.txt_cantidad.grid(column=3, row=1, padx=5, pady=5, sticky="w")
         
-        ttk.Button(frame_info, text = 'Agregar').grid(column=1, row=2, pady=5, sticky='w')
-        ttk.Button(frame_info, text = 'Borrar').grid(column=2, row=2, pady=5, sticky='w')
+        ttk.Button(frame_info, text = 'Agregar', command=self.agregar_carrito).grid(column=1, row=2, pady=5, sticky='w')
+        ttk.Button(frame_info, text = 'Cancelar', command = self.borrar_controles).grid(column=2, row=2, pady=5, sticky='w')
 
         # Treeview para mostrar los productos
         tree_frame = ttk.Frame(frame_principal)
@@ -97,7 +98,7 @@ class Venta_app(tk.Tk):
         # Botón para salir
         ttk.Button(frame_botones, text="Salir", command=self.destroy).pack(side="right", padx=10, pady=5)
         
-        ttk.Button(frame_botones, text="Generar Venta").pack(side="right", padx=10, pady=5)
+        ttk.Button(frame_botones, text="Generar Venta", command=self.nueva_venta).pack(side="right", padx=10, pady=5)
         
         # Frame para la lista de productos
         frame_productos = ttk.Frame(self)
@@ -131,23 +132,95 @@ class Venta_app(tk.Tk):
             total += subtotal
         mb.showinfo("Total de la Venta", f"El total de la venta es: S/{total:.2f}")
 
-    def lista_categorias(self):
-        return self.cnx.select_all(query.SA_CATE)
-
-    def nueva_categoria(self):
-        AgregarProducto(self)
+    def cargar_inicial(self):
         
-    def cargar_productos(self):
         for item in self.tree_prod.get_children():
             self.tree_prod.delete(item)
             
         prods = self.cnx.select_all(query.SA_PROD)
         
+        self.num_factura.set(int(self.cnx.select_all(query.SCOUNT_VENTA)[0][0]) + 1)
+        
         for prod in prods:
-            self.tree_prod.insert("", "end", text = prod[2], values = (prod[3], prod[4]))
+            self.tree_prod.insert("", "end", text = prod[2], values = (prod[3], prod[4], prod[0]))
+
+    def borrar_controles(self):
+        for _ in self.tree.get_children():
+            self.tree.delete(_)
+            
+        self.nom_prod.set("")
+        self.precio_pro.set("")
+        self.cantidad_pro.set("")
+        
+    
+    def cancelar_venta(self):
+        confirmar = mb.askyesno("Cancelar", "Estás cancelando la venta")
+        if confirmar:
+            self.cnx.delete(query.D_DET_VENTA, (self.tree_prod.item(self.tree_prod.selection(), 'values')[2],))
+        
+        self.borrar_controles()
+        self.cargar_inicial()
+
+    def lista_categorias(self):
+        return self.cnx.select_all(query.SA_CATE)
+
+    def nueva_categoria(self):
+        AgregarProducto(self, self.cargar_inicial)
+        
             
     def seleccionar_producto(self):
         self.nom_prod.set(self.tree_prod.item(self.tree_prod.selection(), 'text'))
         self.precio_pro.set(self.tree_prod.item(self.tree_prod.selection(), 'values')[0])
+        
+    def agregar_carrito(self):
+        o_venta = Det_venta(
+            self.txt_factura.get(), 
+            self.tree_prod.item(self.tree_prod.selection(), 'values')[2], 
+            self.txt_producto.get(), 
+            self.txt_precio.get(), 
+            self.txt_cantidad.get()
+        )
+        
+        self.tree.insert("", 'end', values=(
+            o_venta.nom_prod, 
+            o_venta.precio, 
+            o_venta.cantidad, 
+            o_venta.subtotal(),
+            o_venta.id_prod
+            )
+        )
+        
+        self.nom_prod.set("")
+        self.precio_pro.set("")
+        self.cantidad_pro.set("")
+        
+    def nueva_venta(self):
+        if not self.tree.get_children(): 
+            return mb.showinfo("Seleccione algunos productos para comprar")
+        
+        self.cnx.insert(query.I_VENTA)
+        for i in self.tree.get_children():
+            id_venta = int(self.txt_factura.get())
+            id_prod = self.tree.item(i, 'values')[4]
+            cantidad = self.tree.item(i, 'values')[2]
+            subtotal = self.tree.item(i, 'values')[3]
+            params = (
+                id_venta,
+                id_prod, 
+                cantidad, 
+                subtotal, 
+                )   
+        
+            self.cnx.insert(query.I_DET_VENTA, params)
+            self.cnx.update(query.U_STOCK, (cantidad, id_prod, ))
+            
+            
+        self.cnx.update(query.U_VENTA, (id_venta, ))
+        
+        self.borrar_controles()
+        self.cargar_inicial()   
+        
+        
+        
 
 # No es necesario agregar el código de ejecución aquí ya que se encuentra en index.py

@@ -21,9 +21,6 @@ class Connection:
                 database = os.getenv("BD_NAME"),
                 
             )
-            
-            if self.cnx.is_connected():
-                print("Conexion extablecida")
         except mysql.connector.Error as e:
             print(e)
             self.cnx = None
