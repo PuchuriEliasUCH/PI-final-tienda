@@ -1,15 +1,15 @@
-
 from tkinter import *
 from tkinter import ttk, messagebox
 from utils.querys import Consultas_sql as query
 from utils.cnx import Connection
+
 
 class AgregarCategoriaApp(Toplevel):
     def __init__(self, master):
         super().__init__(master)
         self.cnx = Connection()
         self.title("Gestión de Categorías")
-        self.geometry("500x400")
+        self.geometry("298x350")
 
         self.create_widgets()
         self.load_categories()
@@ -32,7 +32,7 @@ class AgregarCategoriaApp(Toplevel):
 
         # Tabla de categorías
         self.tree = ttk.Treeview(self)
-        self.tree.grid(row=2, column=0, columnspan=3, padx=10, pady=10, sticky="nsew")
+        self.tree.grid(row=1, column=0, columnspan=3, padx=10, pady=10, sticky="nsew")
         self.tree.heading("#0", text="Nombre", anchor=CENTER)
 
         # Botones de eliminar y editar
@@ -40,16 +40,19 @@ class AgregarCategoriaApp(Toplevel):
         self.btn_eliminar.grid(row=3, column=0, padx=10, pady=10, sticky="ew")
 
         self.btn_editar = Button(self, text="Editar", command=self.editar_categoria, bg="orange", fg="white")
-        self.btn_editar.grid(row=3, column=1, columnspan=2, padx=10, pady=10, sticky="ew")
+        self.btn_editar.grid(row=3, column=1, padx=10, pady=10, sticky="ew")
+
+        self.btn_exit = Button(self, text="Salir", command=self.destroy)
+        self.btn_exit.grid(row=3, column=2, padx=10, pady=10, sticky="ew")
 
     def load_categories(self):
         for row in self.tree.get_children():
             self.tree.delete(row)
-            
+
         categorias = self.cnx.select_all(query.SA_CATE)
-        
+
         for categoria in categorias:
-            self.tree.insert("", 0, text = categoria[1], values = categoria[0])
+            self.tree.insert("", 0, text=categoria[1], values=categoria[0])
 
     def agregar_categoria(self):
         nombre = self.entry_nombre.get()
@@ -65,15 +68,15 @@ class AgregarCategoriaApp(Toplevel):
         selected_item = self.tree.selection()
         if selected_item:
             id_cate = self.tree.item(self.tree.selection())['values'][0]
-            
+
             seguro = messagebox.askyesno('Eliminar', "Estás seguro de eliminar el registro?")
             if seguro:
                 res = self.cnx.delete(query.D_CATE, (id_cate,))
                 messagebox.showinfo('Eliminar', res)
-                
+
         else:
             self.lbl_mensaje.config(text="Seleccione una categoría para editar", fg="red")
-            
+
         self.load_categories()
 
     def editar_categoria(self):
@@ -82,9 +85,10 @@ class AgregarCategoriaApp(Toplevel):
             id_cate = self.tree.item(self.tree.selection())['values'][0]
             nombre_cate = self.tree.item(self.tree.selection())['text']
             EditarCategoriaApp(self, id_cate, nombre_cate, self.load_categories)
-            
+
         else:
             self.lbl_mensaje.config(text="Seleccione una categoría para editar", fg="red")
+
 
 class EditarCategoriaApp(Toplevel):
     def __init__(self, master, id_cate, nombre_cate, refresh):
@@ -120,4 +124,4 @@ class EditarCategoriaApp(Toplevel):
             self.destroy()
         else:
             messagebox.showerror("Error", "Por favor, ingrese el nuevo nombre de la categoría")
- 
+
